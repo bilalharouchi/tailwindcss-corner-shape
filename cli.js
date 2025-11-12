@@ -230,6 +230,48 @@ function addToPluginsArray(content, pluginConfig) {
 }
 
 /**
+ * Replace existing plugin configuration with new preset
+ */
+function replacePluginConfig(content, newConfig) {
+  const lines = content.split('\n')
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (line.includes('cornerShapePlugin(')) {
+      // Find the full plugin call (might span multiple lines)
+      let startIndex = i
+      let endIndex = i
+
+      // If the line doesn't close with ), look for closing parenthesis
+      if (!line.includes(')')) {
+        for (let j = i + 1; j < lines.length; j++) {
+          endIndex = j
+          if (lines[j].includes(')')) {
+            break
+          }
+        }
+      }
+
+      // Get the indentation from the original line
+      const indent = line.match(/^(\s*)/)[1]
+
+      // Replace the plugin configuration
+      if (startIndex === endIndex) {
+        // Single line replacement
+        lines[i] = line.replace(/cornerShapePlugin\([^)]*\)/, newConfig)
+      } else {
+        // Multi-line replacement
+        lines.splice(startIndex, endIndex - startIndex + 1, indent + newConfig + ',')
+      }
+
+      break
+    }
+  }
+
+  return lines.join('\n')
+}
+
+/**
  * Add the plugin to the Tailwind config
  */
 async function addPluginToConfig(configPath, configName) {
@@ -237,9 +279,11 @@ async function addPluginToConfig(configPath, configName) {
     let content = fs.readFileSync(configPath, 'utf8')
 
     // Check if already added
-    if (isPluginAlreadyAdded(content)) {
+    const isAlreadyAdded = isPluginAlreadyAdded(content)
+
+    if (isAlreadyAdded) {
       log('\n✓ Plugin already configured in ' + configName, 'green')
-      return true
+      log('  Do you want to change the corner-shape preset?', 'cyan')
     }
 
     // Determine if it's ESM or CommonJS
@@ -248,11 +292,16 @@ async function addPluginToConfig(configPath, configName) {
     // Ask user for preference
     const userPreset = await askUserPreference()
 
-    // Step 1: Add import statement
-    content = addImportStatement(content, isESM)
+    if (isAlreadyAdded) {
+      // Replace existing configuration
+      content = replacePluginConfig(content, userPreset.config)
+    } else {
+      // Step 1: Add import statement
+      content = addImportStatement(content, isESM)
 
-    // Step 2: Add to plugins array with user's chosen config
-    content = addToPluginsArray(content, userPreset.config)
+      // Step 2: Add to plugins array with user's chosen config
+      content = addToPluginsArray(content, userPreset.config)
+    }
 
     // Write back to file
     fs.writeFileSync(configPath, content, 'utf8')
