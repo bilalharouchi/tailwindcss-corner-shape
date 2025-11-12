@@ -1,6 +1,6 @@
 {
   "name": "tailwindcss-corner-shape",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Zero-config Tailwind CSS plugin that automatically applies modern CSS corner-shape to all rounded-* utilities",
   "main": "dist/corner-shape-plugin.js",
   "module": "dist/corner-shape-plugin.mjs",
@@ -14,7 +14,8 @@
   },
   "scripts": {
     "build": "tsup corner-shape-plugin.ts --format cjs,esm --dts --clean",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "postinstall": "node postinstall.js"
   },
   "keywords": [
     "tailwindcss",
@@ -51,6 +52,7 @@
   },
   "files": [
     "dist",
+    "postinstall.js",
     "README.md",
     "CHANGELOG.md",
     "EXAMPLES.md"

@@ -5,6 +5,22 @@ All notable changes to the Tailwind CSS Corner Shape Plugin will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-12
+
+### ✨ New Features
+
+- **Auto-setup on install** - Plugin now automatically configures itself in `tailwind.config.ts/js` after `npm install`
+- **Zero manual configuration** - Just run `npm install tailwindcss-corner-shape` and you're done!
+- **Intelligent detection** - Automatically finds and updates your Tailwind config file
+- **Safe updates** - Detects if plugin is already configured to avoid duplicates
+
+### 🔧 Technical
+
+- Added `postinstall.js` script that runs after package installation
+- Supports both ESM and CommonJS config formats
+- Supports `.ts`, `.js`, `.mjs`, `.cjs` config files
+- Can be disabled with `TAILWIND_CORNER_SHAPE_SKIP_SETUP` env variable
+
 ## [1.0.0] - 2025-01-12
 
 ### 🎉 Initial Release
