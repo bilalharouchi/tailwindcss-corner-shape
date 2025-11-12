@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsup corner-shape-plugin.ts --format cjs,esm --dts --clean",
     "prepublishOnly": "npm run build",
-    "postinstall": "node postinstall.js"
+    "postinstall": "node postinstall.js",
+    "preuninstall": "node preuninstall.js"
   },
   "keywords": [
     "tailwindcss",
@@ -57,6 +58,7 @@
     "dist",
     "cli.js",
     "postinstall.js",
+    "preuninstall.js",
     "README.md",
     "CHANGELOG.md",
     "EXAMPLES.md"
