@@ -5,6 +5,47 @@ All notable changes to the Tailwind CSS Corner Shape Plugin will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-12
+
+### ✨ New Features
+
+- **Interactive Setup** - Plugin now asks users to choose their preferred corner-shape style during installation
+- **6 Corner Shape Presets** - Choose from iOS Squircle, Very Rounded, Moderately Rounded, Slightly Rounded, Bevel, or Zero Config
+- **Smart Defaults** - Press Enter to accept the default (iOS Squircle) or choose a number (1-6)
+- **User-Friendly Menu** - Beautiful CLI interface with descriptions for each preset option
+- **Automatic Configuration** - Your choice is automatically applied to the tailwind.config file
+
+### 🎨 Available Presets
+
+1. **iOS Squircle (Default)** - Modern iOS-like corners - balanced and contemporary
+2. **Very Rounded** - Soft, highly rounded corners for a friendly look (`superellipse(1.5)`)
+3. **Moderately Rounded** - Subtle modern corners - not too round (`superellipse(1.7)`)
+4. **Slightly Rounded** - Minimal rounding - close to standard border-radius (`round`)
+5. **Bevel (Industrial)** - Straight chamfered edges for technical UI (`bevel`)
+6. **Zero Config** - No options - just use defaults (`squircle`)
+
+### 🔧 Technical Improvements
+
+- Interactive readline interface for user preferences
+- CI/non-TTY environments automatically use defaults
+- Skip setup with `TAILWIND_CORNER_SHAPE_SKIP_SETUP` environment variable
+
+## [1.1.1] - 2025-01-12
+
+### 🐛 Bug Fixes
+
+- **Fixed postinstall script** - Completely rewrote the auto-setup logic for better reliability
+- **Import detection** - Now correctly finds and inserts import after the last existing import statement
+- **Plugin insertion** - Properly handles indentation and formatting when adding to plugins array
+- **Multi-line arrays** - Correctly handles both single-line and multi-line plugin arrays
+- **No more formatting issues** - Plugin is now inserted with proper commas and line breaks
+
+### 🔧 Technical Improvements
+
+- Replaced fragile regex patterns with line-by-line parsing
+- Better indentation capture and preservation
+- More robust file modification logic
+
 ## [1.1.0] - 2025-01-12
 
 ### ✨ New Features
