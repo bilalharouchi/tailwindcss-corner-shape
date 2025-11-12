@@ -28,8 +28,9 @@ function log(message, color = 'reset') {
  * Find the Tailwind config file in the parent project
  */
 function findTailwindConfig() {
-  // Go up from node_modules to the project root
-  const projectRoot = path.resolve(process.cwd(), '../../')
+  // Go up from node_modules/tailwindcss-corner-shape to the project root
+  // __dirname gives us the actual location of this script file
+  const projectRoot = path.resolve(__dirname, '../../')
 
   const possibleFiles = [
     'tailwind.config.ts',
