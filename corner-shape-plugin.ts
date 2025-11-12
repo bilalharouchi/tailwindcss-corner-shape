@@ -176,16 +176,18 @@ const cornerShapePlugin = plugin.withOptions<CornerShapePluginOptions>(
 
       // Override ALL rounded-* size variants (lg, xl, 2xl, etc.)
       // This automatically picks up custom borderRadius from the user's config!
-      Object.entries(borderRadius).forEach(([key, value]) => {
-        if (key === 'DEFAULT') return
-        if (isExcluded(key) || isExcluded(`rounded-${key}`)) return
+      if (borderRadius) {
+        Object.entries(borderRadius).forEach(([key, value]) => {
+          if (key === 'DEFAULT') return
+          if (isExcluded(key) || isExcluded(`rounded-${key}`)) return
 
-        const cornerShape = getCornerShapeValue(key)
-        overrideUtilities[`.${e(`rounded-${key}`)}`] = {
-          borderRadius: value,
-          'corner-shape': important ? `${cornerShape} !important` : cornerShape,
-        }
-      })
+          const cornerShape = getCornerShapeValue(key)
+          overrideUtilities[`.${e(`rounded-${key}`)}`] = {
+            borderRadius: value,
+            'corner-shape': important ? `${cornerShape} !important` : cornerShape,
+          }
+        })
+      }
 
       // Override rounded-full (unless excluded)
       if (!isExcluded('full') && !isExcluded('rounded-full')) {
