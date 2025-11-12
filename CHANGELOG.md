@@ -5,6 +5,38 @@ All notable changes to the Tailwind CSS Corner Shape Plugin will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-01-12
+
+### ✨ New Features
+
+- **CLI Command** - New `npx tailwindcss-corner-shape init` command for reliable setup
+- **Shadcn-style Experience** - Just like shadcn, run one command to configure everything
+- **Interactive Setup** - Beautiful CLI with corner-shape preset selection
+- **More Reliable** - No more dependency on npm postinstall quirks
+
+### 🚀 Usage
+
+```bash
+# Run the CLI to configure the plugin
+npx tailwindcss-corner-shape init
+
+# Get help
+npx tailwindcss-corner-shape help
+```
+
+### 📋 Commands
+
+- `init` - Configure plugin in your tailwind.config with interactive preset selection
+- `setup` - Alias for init
+- `help` - Show help message
+
+### 🔧 Technical
+
+- Added `bin` field in package.json to expose CLI command
+- CLI uses `process.cwd()` for reliable path resolution
+- Interactive readline interface for preset selection
+- Automatic detection of ESM vs CommonJS config files
+
 ## [1.2.1] - 2025-01-12
 
 ### 🐛 Bug Fixes
