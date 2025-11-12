@@ -1,0 +1,63 @@
+{
+  "name": "tailwindcss-corner-shape",
+  "version": "1.0.0",
+  "description": "Zero-config Tailwind CSS plugin that automatically applies modern CSS corner-shape to all rounded-* utilities",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup corner-shape-plugin.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "tailwindcss",
+    "tailwind",
+    "plugin",
+    "corner-shape",
+    "squircle",
+    "superellipse",
+    "border-radius",
+    "css",
+    "design-system",
+    "ui",
+    "ios",
+    "modern",
+    "zero-config"
+  ],
+  "author": "Bilal Harouchi <bilal@bellamy.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bilalharouchi/tailwindcss-corner-shape"
+  },
+  "bugs": {
+    "url": "https://github.com/bilalharouchi/tailwindcss-corner-shape/issues"
+  },
+  "homepage": "https://github.com/bilalharouchi/tailwindcss-corner-shape#readme",
+  "peerDependencies": {
+    "tailwindcss": ">=3.0.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "EXAMPLES.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

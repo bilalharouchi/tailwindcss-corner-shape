@@ -1,0 +1,25 @@
+# Source files
+*.ts
+!*.d.ts
+
+# Build config
+tsconfig.json
+tsup.config.ts
+
+# Git
+.git
+.gitignore
+
+# Development
+node_modules
+*.log
+.DS_Store
+
+# Tests
+*.test.ts
+*.spec.ts
+__tests__
+
+# Documentation (not needed in npm package)
+docs/
+.github/
