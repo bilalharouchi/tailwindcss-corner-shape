@@ -2,7 +2,7 @@
 
 /**
  * Postinstall script for tailwindcss-corner-shape
- * Automatically adds the plugin to tailwind.config.ts/js with interactive setup
+ * Supports both Tailwind CSS v3 (tailwind.config.ts/js) and v4 (@import in CSS)
  */
 
 const fs = require('fs')
@@ -25,11 +25,40 @@ function log(message, color = 'reset') {
 }
 
 /**
- * Find the Tailwind config file in the parent project
+ * Find CSS files that import Tailwind (v4 detection)
+ */
+function findTailwindV4CSS() {
+  const projectRoot = path.resolve(__dirname, '../../')
+
+  // Possible CSS file locations in v4 projects
+  const possiblePaths = [
+    'app/globals.css',
+    'src/app/globals.css',
+    'styles/globals.css',
+    'src/styles/globals.css',
+    'app/styles.css',
+    'src/index.css',
+    'styles/main.css',
+  ]
+
+  for (const cssPath of possiblePaths) {
+    const fullPath = path.join(projectRoot, cssPath)
+    if (fs.existsSync(fullPath)) {
+      const content = fs.readFileSync(fullPath, 'utf8')
+      // Check if it's a Tailwind v4 CSS file
+      if (content.includes('@import "tailwindcss"') || content.includes("@import 'tailwindcss'")) {
+        return { path: fullPath, name: cssPath, content }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Find the Tailwind config file (v3 detection)
  */
 function findTailwindConfig() {
-  // Go up from node_modules/tailwindcss-corner-shape to the project root
-  // __dirname gives us the actual location of this script file
   const projectRoot = path.resolve(__dirname, '../../')
 
   const possibleFiles = [
@@ -50,9 +79,17 @@ function findTailwindConfig() {
 }
 
 /**
- * Check if the plugin is already in the config
+ * Check if the plugin is already added in v4 CSS
  */
-function isPluginAlreadyAdded(content) {
+function isPluginAlreadyAddedV4(content) {
+  return content.includes('@plugin "tailwindcss-corner-shape') ||
+         content.includes("@plugin 'tailwindcss-corner-shape")
+}
+
+/**
+ * Check if the plugin is already in the v3 config
+ */
+function isPluginAlreadyAddedV3(content) {
   return (
     content.includes('tailwindcss-corner-shape') ||
     content.includes('cornerShapePlugin') ||
@@ -61,9 +98,40 @@ function isPluginAlreadyAdded(content) {
 }
 
 /**
- * Corner shape presets
+ * Corner shape presets for v4
  */
-const CORNER_PRESETS = {
+const V4_PRESETS = {
+  '1': {
+    name: 'iOS Squircle (Default)',
+    description: 'Modern iOS-like corners - balanced and contemporary',
+    directive: '@plugin "tailwindcss-corner-shape/presets/squircle";'
+  },
+  '2': {
+    name: 'Very Rounded',
+    description: 'Soft, highly rounded corners for a friendly look',
+    directive: '@plugin "tailwindcss-corner-shape/presets/very-rounded";'
+  },
+  '3': {
+    name: 'Moderately Rounded',
+    description: 'Subtle modern corners - not too round',
+    directive: '@plugin "tailwindcss-corner-shape/presets/moderately-rounded";'
+  },
+  '4': {
+    name: 'Classic Round',
+    description: 'Standard border-radius style',
+    directive: '@plugin "tailwindcss-corner-shape/presets/round";'
+  },
+  '5': {
+    name: 'Bevel (Industrial)',
+    description: 'Straight chamfered edges for technical UI',
+    directive: '@plugin "tailwindcss-corner-shape/presets/bevel";'
+  },
+}
+
+/**
+ * Corner shape presets for v3
+ */
+const V3_PRESETS = {
   '1': {
     name: 'iOS Squircle (Default)',
     description: 'Modern iOS-like corners - balanced and contemporary',
@@ -80,8 +148,8 @@ const CORNER_PRESETS = {
     config: "cornerShapePlugin({ default: 'superellipse(1.7)' })"
   },
   '4': {
-    name: 'Slightly Rounded',
-    description: 'Minimal rounding - close to standard border-radius',
+    name: 'Classic Round',
+    description: 'Standard border-radius style',
     config: "cornerShapePlugin({ default: 'round' })"
   },
   '5': {
@@ -99,12 +167,12 @@ const CORNER_PRESETS = {
 /**
  * Display corner shape options menu
  */
-function displayMenu() {
+function displayMenu(presets) {
   log('\n╔══════════════════════════════════════════════════════════╗', 'cyan')
   log('║          Choose Your Corner Shape Style 🎨              ║', 'bright')
   log('╚══════════════════════════════════════════════════════════╝', 'cyan')
 
-  Object.entries(CORNER_PRESETS).forEach(([key, preset]) => {
+  Object.entries(presets).forEach(([key, preset]) => {
     log(`\n  ${key}. ${preset.name}`, 'bright')
     log(`     ${preset.description}`, 'reset')
   })
@@ -115,23 +183,24 @@ function displayMenu() {
 /**
  * Ask user for their preference
  */
-function askUserPreference() {
+function askUserPreference(presets) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     })
 
-    displayMenu()
+    displayMenu(presets)
 
-    rl.question('\nChoose a style (1-6) or press Enter for default [1]: ', (answer) => {
+    const maxChoice = Object.keys(presets).length
+    rl.question(`\nChoose a style (1-${maxChoice}) or press Enter for default [1]: `, (answer) => {
       rl.close()
       const choice = answer.trim() || '1'
-      const preset = CORNER_PRESETS[choice]
+      const preset = presets[choice]
 
       if (!preset) {
         log('\n⚠ Invalid choice, using default (iOS Squircle)', 'yellow')
-        resolve(CORNER_PRESETS['1'])
+        resolve(presets['1'])
       } else {
         log(`\n✓ Selected: ${preset.name}`, 'green')
         resolve(preset)
@@ -141,11 +210,57 @@ function askUserPreference() {
 }
 
 /**
- * Add import/require statement for the plugin
+ * Add @plugin directive to Tailwind v4 CSS file
+ */
+async function addPluginToV4CSS(cssFile) {
+  try {
+    let content = cssFile.content
+
+    // Check if already added
+    if (isPluginAlreadyAddedV4(content)) {
+      log('\n✓ Plugin already configured in ' + cssFile.name, 'green')
+      return true
+    }
+
+    // Ask user for preference (only if not in CI)
+    let userPreset = V4_PRESETS['1'] // Default
+    if (!process.env.CI && process.stdin.isTTY) {
+      userPreset = await askUserPreference(V4_PRESETS)
+    }
+
+    // Find the line with @import "tailwindcss"
+    const lines = content.split('\n')
+    let importIndex = -1
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('@import "tailwindcss"') || lines[i].includes("@import 'tailwindcss'")) {
+        importIndex = i
+        break
+      }
+    }
+
+    if (importIndex === -1) {
+      log('\n⚠ Could not find @import "tailwindcss" in CSS file', 'yellow')
+      return false
+    }
+
+    // Insert @plugin directive after @import "tailwindcss"
+    lines.splice(importIndex + 1, 0, userPreset.directive)
+
+    // Write back to file
+    fs.writeFileSync(cssFile.path, lines.join('\n'), 'utf8')
+    return true
+  } catch (error) {
+    log(`\n✗ Error updating CSS: ${error.message}`, 'red')
+    return false
+  }
+}
+
+/**
+ * Add import/require statement for the plugin (v3)
  */
 function addImportStatement(content, isESM) {
   if (isESM) {
-    // Find the last import statement
     const lines = content.split('\n')
     let lastImportIndex = -1
 
@@ -156,15 +271,12 @@ function addImportStatement(content, isESM) {
     }
 
     if (lastImportIndex !== -1) {
-      // Insert after the last import
       lines.splice(lastImportIndex + 1, 0, "import cornerShapePlugin from 'tailwindcss-corner-shape'")
       return lines.join('\n')
     } else {
-      // No imports found, add at the beginning
       return `import cornerShapePlugin from 'tailwindcss-corner-shape'\n\n${content}`
     }
   } else {
-    // CommonJS
     const lines = content.split('\n')
     let lastRequireIndex = -1
 
@@ -184,12 +296,10 @@ function addImportStatement(content, isESM) {
 }
 
 /**
- * Add plugin to the plugins array with user's chosen configuration
+ * Add plugin to the plugins array with user's chosen configuration (v3)
  */
 function addToPluginsArray(content, pluginConfig) {
   const lines = content.split('\n')
-
-  // Find the plugins: [ line
   let pluginsLineIndex = -1
   let pluginsIndent = ''
 
@@ -197,7 +307,6 @@ function addToPluginsArray(content, pluginConfig) {
     const line = lines[i]
     if (line.match(/plugins:\s*\[/)) {
       pluginsLineIndex = i
-      // Capture the indentation
       const match = line.match(/^(\s*)plugins/)
       if (match) {
         pluginsIndent = match[1]
@@ -207,24 +316,18 @@ function addToPluginsArray(content, pluginConfig) {
   }
 
   if (pluginsLineIndex === -1) {
-    // No plugins array found, can't auto-add
     return content
   }
 
-  // Check if plugins array is on one line or multiple lines
   const pluginsLine = lines[pluginsLineIndex]
 
   if (pluginsLine.includes(']')) {
-    // Single line: plugins: []  or  plugins: [something]
     if (pluginsLine.includes('[]')) {
-      // Empty array
       lines[pluginsLineIndex] = pluginsLine.replace('[]', `[${pluginConfig}]`)
     } else {
-      // Has content - insert before the ]
       lines[pluginsLineIndex] = pluginsLine.replace('[', '[\n' + pluginsIndent + '\t\t' + pluginConfig + ',\n' + pluginsIndent + '\t')
     }
   } else {
-    // Multi-line array - insert after plugins: [
     lines.splice(pluginsLineIndex + 1, 0, pluginsIndent + '\t\t' + pluginConfig + ',')
   }
 
@@ -232,34 +335,27 @@ function addToPluginsArray(content, pluginConfig) {
 }
 
 /**
- * Add the plugin to the Tailwind config
+ * Add the plugin to the Tailwind v3 config
  */
-async function addPluginToConfig(configPath, configName) {
+async function addPluginToV3Config(configPath, configName) {
   try {
     let content = fs.readFileSync(configPath, 'utf8')
 
-    // Check if already added
-    if (isPluginAlreadyAdded(content)) {
+    if (isPluginAlreadyAddedV3(content)) {
       log('\n✓ Plugin already configured in ' + configName, 'green')
       return true
     }
 
-    // Determine if it's ESM or CommonJS
     const isESM = configName.endsWith('.mjs') || configName.endsWith('.ts') || content.includes('export default')
 
-    // Ask user for preference (only if not in CI)
-    let userPreset = CORNER_PRESETS['1'] // Default
+    let userPreset = V3_PRESETS['1']
     if (!process.env.CI && process.stdin.isTTY) {
-      userPreset = await askUserPreference()
+      userPreset = await askUserPreference(V3_PRESETS)
     }
 
-    // Step 1: Add import statement
     content = addImportStatement(content, isESM)
-
-    // Step 2: Add to plugins array with user's chosen config
     content = addToPluginsArray(content, userPreset.config)
 
-    // Write back to file
     fs.writeFileSync(configPath, content, 'utf8')
     return true
   } catch (error) {
@@ -282,24 +378,48 @@ async function main() {
   log('  🚀 tailwindcss-corner-shape - Interactive Setup', 'bright')
   log('='.repeat(60), 'blue')
 
-  // Find Tailwind config
-  const config = findTailwindConfig()
+  // Try to detect Tailwind v4 first
+  const v4CSS = findTailwindV4CSS()
 
-  if (!config) {
-    log('\n⚠ No tailwind.config file found', 'yellow')
-    log('  Please add the plugin manually:\n', 'reset')
-    log('  import cornerShapePlugin from \'tailwindcss-corner-shape\'', 'reset')
-    log('  export default { plugins: [cornerShapePlugin()] }', 'reset')
+  if (v4CSS) {
+    log(`\n📝 Found Tailwind CSS v4: ${v4CSS.name}`, 'blue')
+
+    const success = await addPluginToV4CSS(v4CSS)
+
+    if (success) {
+      log('\n✨ Success! Plugin automatically configured for Tailwind v4!', 'green')
+      log('\n🎯 All your rounded-* classes now have modern corner-shape!', 'bright')
+      log('   No code changes needed - it just works! ✨\n', 'reset')
+    } else {
+      log('\n⚠ Could not auto-configure. Please add manually to your CSS:', 'yellow')
+      log('  @import "tailwindcss";', 'reset')
+      log('  @plugin "tailwindcss-corner-shape/presets/squircle";', 'reset')
+    }
+
+    log('='.repeat(60) + '\n', 'blue')
     return
   }
 
-  log(`\n📝 Found: ${config.name}`, 'blue')
+  // Fallback to Tailwind v3 config
+  const v3Config = findTailwindConfig()
 
-  // Add plugin to config
-  const success = await addPluginToConfig(config.path, config.name)
+  if (!v3Config) {
+    log('\n⚠ No Tailwind CSS config or import found', 'yellow')
+    log('  For Tailwind v4, add to your CSS file:', 'reset')
+    log('    @import "tailwindcss";', 'reset')
+    log('    @plugin "tailwindcss-corner-shape/presets/squircle";', 'reset')
+    log('\n  For Tailwind v3, add to tailwind.config.ts/js:', 'reset')
+    log('    import cornerShapePlugin from \'tailwindcss-corner-shape\'', 'reset')
+    log('    export default { plugins: [cornerShapePlugin()] }', 'reset')
+    return
+  }
+
+  log(`\n📝 Found Tailwind CSS v3: ${v3Config.name}`, 'blue')
+
+  const success = await addPluginToV3Config(v3Config.path, v3Config.name)
 
   if (success) {
-    log('\n✨ Success! Plugin automatically configured!', 'green')
+    log('\n✨ Success! Plugin automatically configured for Tailwind v3!', 'green')
     log('\n🎯 All your rounded-* classes now have modern corner-shape!', 'bright')
     log('   No code changes needed - it just works! ✨\n', 'reset')
   } else {
