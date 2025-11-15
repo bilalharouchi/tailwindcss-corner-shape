@@ -38,9 +38,49 @@ yarn add tailwindcss-corner-shape
 pnpm add tailwindcss-corner-shape
 ```
 
-## 🚀 Quick Start
+## 🎯 Tailwind CSS v3 & v4 Support
 
-### Basic Usage (Zero Config!)
+This plugin works with **both Tailwind CSS v3 and v4**. Choose the setup that matches your Tailwind version:
+
+### Tailwind v4 (CSS-first)
+
+Use the `@plugin` directive in your CSS file:
+
+```css
+/* app/globals.css or styles/app.css */
+@import "tailwindcss";
+@plugin "tailwindcss-corner-shape/presets/squircle";
+```
+
+**Available presets for v4:**
+- `squircle` - iOS-style (default)
+- `very-rounded` - Soft, highly rounded
+- `moderately-rounded` - Balanced modern
+- `slightly-rounded` - Subtle smooth
+- `round` - Perfect circles
+- `bevel` - Industrial chamfer
+
+**Custom configuration for v4:**
+
+Create a wrapper file for custom options:
+
+```javascript
+// corner-shape.config.js
+import cornerShapePlugin from 'tailwindcss-corner-shape'
+
+export default cornerShapePlugin({
+  default: 'superellipse(1.7)',
+  variants: { lg: 'squircle' }
+})
+```
+
+Then load it:
+```css
+@import "tailwindcss";
+@plugin "./corner-shape.config.js";
+```
+
+### Tailwind v3 (JavaScript config)
 
 Add the plugin to your `tailwind.config.js`:
 
@@ -53,6 +93,18 @@ export default {
   ],
 }
 ```
+
+**Or use named preset exports:**
+
+```js
+import { squircle, round, bevel } from 'tailwindcss-corner-shape'
+
+export default {
+  plugins: [squircle]  // Use any preset
+}
+```
+
+---
 
 **That's it!** All your existing `rounded-*` classes now have modern corner shapes - **NO CODE CHANGES NEEDED**:
 

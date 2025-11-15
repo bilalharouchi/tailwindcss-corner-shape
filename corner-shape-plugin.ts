@@ -233,6 +233,19 @@ const cornerShapePlugin = plugin.withOptions<CornerShapePluginOptions>(
   }
 )
 
+// Default export (configurable)
 export default cornerShapePlugin
+
+// Named export for backwards compatibility
 export { cornerShapePlugin }
+
+// Export types
 export type { CornerShapePluginOptions }
+
+// Preconfigured presets for easy use (especially useful for Tailwind v4)
+export const squircle = cornerShapePlugin({ default: 'squircle' })
+export const round = cornerShapePlugin({ default: 'round' })
+export const bevel = cornerShapePlugin({ default: 'bevel' })
+export const veryRounded = cornerShapePlugin({ default: 'superellipse(1.5)' })
+export const moderatelyRounded = cornerShapePlugin({ default: 'superellipse(1.8)' })
+export const slightlyRounded = cornerShapePlugin({ default: 'superellipse(2.5)' })
