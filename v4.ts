@@ -41,7 +41,7 @@ function createCornerShapePlugin(options: CornerShapePluginOptions = {}) {
   } = options
 
   // Return the plugin function directly (v4 compatible)
-  return function({ addUtilities, matchUtilities, theme, e }: any) {
+  return function({ addUtilities, matchUtilities, theme }: any) {
     // If plugin is disabled, don't do anything
     if (!enabled) {
       return
@@ -76,7 +76,7 @@ function createCornerShapePlugin(options: CornerShapePluginOptions = {}) {
         if (isExcluded(key) || isExcluded(`rounded-${key}`)) return
 
         const cornerShape = getCornerShapeValue(key)
-        overrideUtilities[`.${e(`rounded-${key}`)}`] = {
+        overrideUtilities[`.rounded-${key}`] = {
           borderRadius: value,
           'corner-shape': important ? `${cornerShape} !important` : cornerShape,
         }
