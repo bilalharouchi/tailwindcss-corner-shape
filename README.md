@@ -376,7 +376,7 @@ Contributions are welcome! This plugin is designed to be:
 
 ## 📄 License
 
-MIT © [Your Name/Organization]
+MIT © Bilal Harouchi
 
 ## 🔗 Resources
 
